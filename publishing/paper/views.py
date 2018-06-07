@@ -26,6 +26,12 @@ def myPapers(request):
 def getPaper(request):
     pass
 
+def getPaperXml(request):
+    pass
+
+def getPaperPdf(request):
+    pass
+
 def pendingRevisions(request):
     pass
 
@@ -35,6 +41,9 @@ def acceptRevision(request):
 def refuseRevision(request):
     pass
 
+def submitedPapersPage(request):
+    pass
+
 def appointRevisionPage(request):
     pass
 
@@ -42,9 +51,6 @@ def appointRevision(request):
     pass
 
 def managePage(request):
-    pass
-
-def changeState(request):
     pass
 
 def setAcceptedState(request):

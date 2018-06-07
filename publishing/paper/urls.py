@@ -14,7 +14,30 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from django.conf.urls import url
+
+from . import views
 
 urlpatterns = [
-    
+    url(r'^writePaper', views.uploadPage, name = "writePaperPage"),
+    url(r'^submitPaper', views.upload, name = "submitPaper"),
+    url(r'^reviewPaper', views.revisionPage, name = "revisionPage"),
+    url(r'^submitReview', views.uploadRevision, name = "submitReview"),
+    url(r'^pullPaper', views.pullPaper, name = "pullPaper"),
+    url(r'^searchPapers', views.searchPage, name = "searchPapersPage"),
+    url(r'^myPapers', views.myPapers, name = "myPapersPage"),
+    url(r'^viewPaper', views.getPaper, name = "viewPaperPage"),
+    url(r'^getPaperXml', views.getPaperXml, name = "getPaperXml"),
+    url(r'^getPaperPdf', views.getPaperPdf, name = "getPaperPdf"),
+    url(r'^pendingRevisions', views.pendingRevisions, name = "pendingRevisionsPage"),
+    url(r'^acceptRevision', views.acceptRevision, name = "acceptRevision"),
+    url(r'^refuseRevision', views.refuseRevision, name = "refuseRevision"),
+    url(r'^submitedPapers', views.submitedPapersPage, name = "sumbitedPapersPage"),
+    url(r'^appointingRevisions', views.appointRevisionPage, name = "appointRevisionPage"),
+    url(r'^appointRevision', views.appointRevision, name = "appointRevision"),
+    url(r'^managePublications', views.managePage, name = "managePublications"),
+    url(r'^setAcceptedState', views.setAcceptedState, name = "setAcceptedState"),
+    url(r'^setRefusedState', views.setRefusedState, name = "setRefusedState"),
+    url(r'^setRevisionState', views.setRevisionState, name = "setRevisionState"),
+    url(r'^setWritingState', views.setWritingState, name = "setWritingState"),
 ]
