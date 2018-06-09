@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://localhost:8080/paper/RevisionSchema"
+    targetNamespace="http://localhost:8080/paper/RevisionSchema" elementFormDefault="qualified">
+
+    <xs:element name="revision">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="plagiarism" type="xs:string"/>
+                <xs:element name="defamation" type="xs:string"/>
+                <xs:element name="fraud" type="xs:string"/>
+                <xs:element name="originality" type="xs:string"/>
+                <xs:element name="layout" type="xs:string"/>
+                <xs:element name="title" type="xs:string"/>
+                <xs:element name="abstract" type="xs:string"/>
+                <xs:element name="introduction" type="xs:string"/>
+                <xs:element name="methodology" type="xs:string"/>
+                <xs:element name="statisticalerrors" type="xs:string"/>
+                <xs:element name="results" type="xs:string"/>
+                <xs:element name="conclusion" type="xs:string"/>
+                <xs:element name="graphics" type="xs:string"/>
+                <xs:element name="language" type="xs:string"/>
+                <xs:element name="recommendations">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="Accept"/>
+                            <xs:enumeration value="Minor Revisions"/>
+                            <xs:enumeration value="Major Revisions"/>
+                            <xs:enumeration value="Reject"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

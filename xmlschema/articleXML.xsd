@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://localhost:8080/paper/ArticleSchema"
+    xmlns="http://localhost:8080/paper/ArticleSchema">
+    <xs:element name="article">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="articledata"/>
+                <xs:element name="abstract">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="purpose" type="xs:string"/>
+                            <xs:element minOccurs="1" name="designmethodologyapproach"
+                                type="xs:string"/>
+                            <xs:element name="findings" type="xs:string"/>
+                            <xs:element minOccurs="0" name="researchlimitationsimplications"
+                                type="xs:string"/>
+                            <xs:element minOccurs="0" name="PracticalImplications" type="xs:string"/>
+                            <xs:element minOccurs="0" name="socialimplications" type="xs:string"/>
+                            <xs:element name="originalityvalue" type="xs:string"/>
+                            <xs:element ref="keywords"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" ref="section"/>
+                <xs:element name="references">
+                    <xs:complexType>
+                        <xs:sequence maxOccurs="unbounded" minOccurs="0">
+                            <xs:element ref="reference"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="classification">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="Research paper"/>
+                        <xs:enumeration value="Viewpoint"/>
+                        <xs:enumeration value="Technical paper"/>
+                        <xs:enumeration value="Conceptual paper"/>
+                        <xs:enumeration value="Case study"/>
+                        <xs:enumeration value="Literature review"/>
+                        <xs:enumeration value="General review"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="articledata">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="title" type="xs:string"/>
+                <xs:element name="author">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="name" type="xs:string"/>
+                            <xs:element name="institute" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element ref="keywords"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="keywords">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="12" name="keyword" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="section">
+        <xs:complexType>
+            <xs:sequence maxOccurs="1" minOccurs="1">
+                <xs:element name="title" type="xs:string"/>
+                <xs:choice maxOccurs="unbounded">
+                    <xs:element ref="paragraph" maxOccurs="1" minOccurs="1"/>
+                    <xs:element name="figures" maxOccurs="1" minOccurs="0" type="xs:string"/>
+                    <xs:element maxOccurs="1" minOccurs="0" ref="table"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="paragraph">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice maxOccurs="unbounded">
+                    <xs:element name="bullet" maxOccurs="1" minOccurs="0" type="xs:string"/>
+                    <xs:element name="text" maxOccurs="1" type="xs:string"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="quotation">
+        <xs:complexType mixed="false">
+            <xs:attribute name="from" type="xs:anyURI"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reference">
+        <xs:complexType>
+            <xs:attribute name="available" form="unqualified" type="xs:boolean"/>
+            <xs:attribute name="at" type="xs:anyURI"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="table">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header">
+                    <xs:complexType>
+                        <xs:sequence maxOccurs="1">
+                            <xs:element maxOccurs="unbounded" name="headelement" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element maxOccurs="unbounded" name="row">
+                    <xs:complexType>
+                        <xs:sequence maxOccurs="1">
+                            <xs:element maxOccurs="unbounded" name="element" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

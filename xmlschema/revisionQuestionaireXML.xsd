@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://localhost:8080/paper/QuestionnaireSchema"
+    targetNamespace="http://localhost:8080/paper/QuestionnaireSchema" elementFormDefault="qualified">
+
+    <xs:element name="questionnaire">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="question"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="question">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="title" type="xs:string"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="answer" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
