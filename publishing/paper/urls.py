@@ -30,7 +30,6 @@ urlpatterns = [
     url(r'^getPaperXml', views.getPaperXml, name = "getPaperXml"),
     url(r'^getPaperPdf', views.getPaperPdf, name = "getPaperPdf"),
     url(r'^pendingRevisions', views.pendingRevisions, name = "pendingRevisionsPage"),
-    url(r'^acceptRevision', views.acceptRevision, name = "acceptRevision"),
     url(r'^refuseRevision', views.refuseRevision, name = "refuseRevision"),
     url(r'^submitedPapers', views.submitedPapersPage, name = "sumbitedPapersPage"),
     url(r'^appointingRevisions', views.appointRevisionPage, name = "appointRevisionPage"),
@@ -44,4 +43,5 @@ urlpatterns = [
     url(r'^RevisionSchema', views.getRevisionSchema, name = "RevisionSchema"),
     url(r'^LetterSchema', views.getLetterSchema, name = "LetterSchema"),
     url(r'^QuestionnaireSchema', views.getQuestionnaireSchema, name = "QuestionnaireSchema"),
+    url(r'^getUesrInfo', views.getUserInfo,name="userInfo"),
 ]
