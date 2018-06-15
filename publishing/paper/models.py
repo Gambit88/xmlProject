@@ -2,9 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
+class Qlog(models.Model):
+    text = models.CharField(max_length = 10000)
+
 class Recension(models.Model):
-    pass
-    #reviewer = models.OneToOneField(User,on_delete=models.CASCADE)
+    text = models.CharField(max_length = 80000)
+    qlog = models.OneToOneField(Qlog, on_delete=models.CASCADE)
+    
     #paper_set.all() za paper objekte koji se rencezurisu
 class Paper(models.Model):
     title = models.CharField(max_length=100)
@@ -28,4 +32,16 @@ class Paper(models.Model):
     publisher = models.OneToOneField(User, on_delete=models.CASCADE)
     deleted = models.BooleanField()
     recension = models.ManyToManyField(Recension)
-    location = models.CharField(max_length=200)
+    text = models.CharField(max_length = 80000)
+    keywords = models.CharField(max_length = 300)
+    paper_type = models.CharField(max_length = 100)
+    class Meta:
+        permissions = (("can_publish","Can supervise revision process"),("can_manage","Can change state of process for given article"),)
+
+class Schema(models.Model):
+    name = models.CharField(max_length=100, unique = True)
+    text = models.CharField(max_length = 6000)
+
+class Questionnaire(models.Model):
+    text = models.CharField(max_length = 10000)
+    paper = models.OneToOneField(Paper, on_delete=models.CASCADE)
