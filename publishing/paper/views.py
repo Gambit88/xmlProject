@@ -3,7 +3,8 @@ from django.template import loader
 from django.http import HttpResponse
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, permission_required, csrf_exempt
+from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.csrf import csrf_exempt
 
 from io import StringIO
 from lxml import etree
@@ -13,7 +14,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from models import Paper,Recension,Questionnaire,Schema,Qlog
+from paper.models import Paper,Recension,Questionnaire,Schema,Qlog
 
 import requests
 from requests.auth import HTTPDigestAuth
