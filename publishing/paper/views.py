@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.template import loader
 from django.http import HttpResponse
 from django.contrib.auth.models import User,Group
@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_exempt
 
-from io import StringIO
+from io import StringIO,BytesIO
 from lxml import etree
 import _thread
 
@@ -48,65 +48,120 @@ def uploadPage(request):#DONE
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_paper')
+def rewritePage(request,paper_id):#DONE
+    paper = Paper.objects.get(id=paper_id,author__id=request.user.id)
+    text = paper.text
+    template = loader.get_template("writePaperPage.html")
+    publisherList = User.objects.filter(groups__name='publisher')
+    return HttpResponse(template.render({'text':text}))
+
+@login_required(login_url="/paper/loginPage")
+@permission_required('paper.add_paper')
 @csrf_exempt
-def upload(request):#DONE
-    #prvo parsirati uz proveru seme
+def upload(request):#TOTALY DONE
+    paperFile = request.FILES['paper']
+    letterFile = request.FILES['letter']
+    try:
+        paper_id = request.POST.get('paper_id')
+    except:
+        paper_id = None
     sch = Schema.objects.get(name="paper")
-    schema = StringIO(sch.text)
-    schema_doc = etree.parse(schema)
+    schema = sch.text
+    schema_doc = etree.fromstring(schema)
     xmlschema = etree.XMLSchema(schema_doc)
-    message = request.POST.body
-    doc = etree.parse(message)
-    if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#dokument ne odgovara semi
+
+    paperDoc = etree.parse(paperFile)
+    if xmlschema.validate(paperDoc)==False:
+        return HttpResponse(status=400)#dokument ne odgovara semi
     
     sch = Schema.objects.get(name="letter")
-    schema = StringIO(sch.text)
-    schema_doc = etree.parse(schema)
+    schema = sch.text
+    schema_doc = etree.fromstring(schema)
     xmlschema = etree.XMLSchema(schema_doc)
-    message = request.POST.get('message')
-    doc = etree.parse(message)
+
+    doc = etree.parse(letterFile)
     if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#pismo ne odgovara semi
+        return HttpResponse(status=400)#pismo ne odgovara semi
     
-    content = request.POST.body
-    model = etree.parse(content)
-    title = model.findall('.//title').text_content()
-    keywords = model.findall('.//keywords').text_content()
-    paper_type = model.findall('.//classification').text_content()
-    paper = Paper()
-    paper.title = title
-    paper.status = '0'
-    paper.rec_total = 0
-    paper.rec_completed = 0
-    paper.author = request.user
-    paper.publisher = User.objects.get(username = str(request.POST.get('publisher')))
-    paper.deleted = False
-    paper.text = content
-    paper.paper_type = paper_type
-    paper.keywords = keywords
-    paper.save()
+    message = etree.tostring(doc).decode('UTF-8')
+    content = etree.tostring(paperDoc).decode('UTF-8')
+
+    titles = ""
+    for el in paperDoc.iter('{*}title'):
+        titles = titles + '-' + el.text 
+    title = titles.split('-')[1]
+
+    keywords = ""
+    for el in paperDoc.iter('{*}keyword'):
+        keywords = keywords + ' ' + el.text 
+    keywords = keywords.strip()
     
-    _thread.start_new_thread(sendEmail,(paper.publisher.email,message,"Publishing "+title))
+    paper_type = ""
+    for el in paperDoc.iter('{*}article'):
+        paper_type = el.attrib['classification']
+
+    if paper_id==None:
+        paper = Paper()
+        paper.title = title
+        paper.status = '0'
+        paper.rec_total = 0
+        paper.rec_completed = 0
+        paper.author = request.user
+        paper.publisher = User.objects.get(username = str(request.POST.get('publisher')))
+        paper.deleted = False
+        paper.text = content
+        paper.paper_type = paper_type
+        paper.keywords = keywords
+        paper.save()
+        _thread.start_new_thread(sendEmail,(paper.publisher.email,message,"Publishing "+title))
+    else:
+        paper = Paper.objects.get(id=paper_id)
+        paper.title = title
+        paper.status = '0'
+        paper.text = content
+        paper.paper_type = paper_type
+        paper.keywords = keywords
+        paper.save()
+        _thread.start_new_thread(sendEmail,(paper.publisher.email,message,"Rewriting "+title))
+    
     template = loader.get_template("static/completedPaper.html")
     return HttpResponse(template.render())    
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_paper')
 @csrf_exempt
-def pullPaper(request):#DONE
-    id = int(request.POST.get('articleId'))
-    article = Paper.objects.get(id=id)
-    article.deleted = True
-    article.save()
-    return HttpResponse(status_code=200)
+def pullPaper(request,paper_id):#DONE
+    try:
+        article = Paper.objects.get(id=paper_id)
+        article.deleted = True
+        article.save()
+        return HttpResponse(status=200)
+    except :
+        return HttpResponse(status=400)
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_paper')
 def myPapers(request):#DONE
     template = loader.get_template("myPapersPage.html")
-    articles = Paper.objects.filter(author__id = request.user.id,deleted=False)
-    return HttpResponse(template.render({'articles':articles}))
+    try:
+        searchType = request.GET.get('type')
+        if searchType=="t":
+            searchContent = request.GET.get('text')
+            papers = Paper.objects.filter(author__id = request.user.id,deleted=False,text__contains=searchContent).defer("text")
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
+        else:
+            searchTitle = request.GET.get('title')
+            searchStatus = request.GET.get('status')
+            searchPublisher = request.GET.get('publisher')
+            searchPaper = request.GET.get('paperType')
+            searchKeywords = request.GET.get('keywords')
+            papers = Paper.objects.filter(author__id = request.user.id,deleted=False,title__iregex=searchTitle,status__iregex=searchStatus,publisher__last_name__iregex=searchPublisher,paper_type=searchPaper).defer("text")
+            for keyword in str(searchKeywords).split(','):
+                papers = papers.objects.filter(keywords__contains=keyword)
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
+    except:
+        papers = Paper.objects.filter(author__id = request.user.id,deleted=False).defer("text")
+        return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
 #######################################################################
 
 #REVISION CCONTROL######################################
@@ -129,14 +184,14 @@ def refuseRevision(request):#DONE
     message = request.POST.get('message')
     doc = etree.parse(message)
     if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#poruka ne odgovara semi
+        return HttpResponse(status=400)#poruka ne odgovara semi
     id = int(request.POST.get('articleId'))
     article = Paper.objects.get(id=id)
     article.rec_total = article.rec_total-1
     article.reviewer.remove(request.user)
     article.save()
     _thread.start_new_thread(sendEmail,(article.publisher.email,message,"Refused revision of " + str(article.title)))
-    return HttpResponse(status_code=200)
+    return HttpResponse(status=200)
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -160,7 +215,7 @@ def uploadRevision(request):#DONE
     message = request.POST.body
     doc = etree.parse(message)
     if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#revizija ne odgovara semi
+        return HttpResponse(status=400)#revizija ne odgovara semi
     sch = Schema.objects.get(name="questionnaire")
     schema = StringIO(sch.text)
     schema_doc = etree.parse(schema)
@@ -168,7 +223,7 @@ def uploadRevision(request):#DONE
     message = request.POST.get('questionnaire')
     doc = etree.parse(message)
     if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#upitinik ne odgovara semi
+        return HttpResponse(status=400)#upitinik ne odgovara semi
     
     id = int(request.POST.get('articleId'))
     article = Paper.objects.get(id=id)
@@ -216,7 +271,7 @@ def appointRevision(request):#DONE
     message = request.POST.get('message')
     doc = etree.parse(message)
     if xmlschema.validate(doc)==False:
-        return HttpResponse(status_code=400)#poruka ne odgovara semi
+        return HttpResponse(status=400)#poruka ne odgovara semi
     id = int(request.POST.get('articleId'))
     userId = int(request.POST.get('userId'))
     user = User.objects.get(id=userId)
@@ -225,7 +280,7 @@ def appointRevision(request):#DONE
     article.reviewer.add(user)
     article.save()
     _thread.start_new_thread(sendEmail, (article.publisher.email,message,"Receved revision request for " + str(article.title)))
-    return HttpResponse(status_code=200)
+    return HttpResponse(status=200)
 
 
 @login_required(login_url="/paper/loginPage")
@@ -268,8 +323,26 @@ def setWritingState(request):#DONE
 #PUBLIC#################################
 def searchPage(request):
     template = loader.get_template("searchPapersPage.html")
-    #all the search regex based
-    return HttpResponse(template.render({}))
+    try:
+        searchType = request.GET.get('type')
+        if searchType=="t":
+            searchContent = request.GET.get('text')
+            papers = Paper.objects.filter(status='4',deleted=False,text__contains=searchContent).defer("text")
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+        else:
+            searchTitle = request.GET.get('title')
+            searchAuthor = request.GET.get('author')
+            searchPublisher = request.GET.get('publisher')
+            searchPaper = request.GET.get('paperType')
+            searchKeywords = request.GET.get('keywords')
+            papers = Paper.objects.filter(status='4',deleted=False,title__iregex=searchTitle,author__last_name__iregex=searchAuthor,publisher__last_name__iregex=searchPublisher,paper_type=searchPaper).defer("text")
+            for keyword in str(searchKeywords).split(','):
+                papers = papers.objects.filter(keywords__contains=keyword)
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+    except:
+        papers = Paper.objects.filter(status='4',deleted=False).defer("text")
+        return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+    
 
 def getPaper(request,paper_id):
     template = loader.get_template("viewPaperPage.html")
@@ -278,13 +351,13 @@ def getPaper(request,paper_id):
 
     return HttpResponse(template.render({}))
 
-def getPaperXml(request):#DONE
+def getPaperXml(request,paper_id):#DONE
     id = int(request.GET.get('articleId'))
     article = Paper.objects.get(id=id, deleted=False,status='4')
     text = article.text
-    return HttpResponse(content=text,status_code=200, content_type="text/xml")
+    return HttpResponse(content=text,status=200, content_type="text/xml")
 
-def getPaperPdf(request):
+def getPaperPdf(request,paper_id):
     id = int(request.GET.get('articleId'))
     article = Paper.objects.get(id=id, deleted=False,status='4')
     #convert to pdf
@@ -293,55 +366,64 @@ def getPaperPdf(request):
 
 
 #SCHEMAS###############
-def getPaperSchema(request):#DONE
+def getPaperSchema(request):#TOTALY DONE
     sch = Schema.objects.get(name="paper")
-    return HttpResponse(content=sch.text, status_code=200, content_type="text/xml")
+    return HttpResponse(content='<?xml version="1.0" encoding="UTF-8"?>\n' + sch.text, status=200, content_type="text/xml")
 
-def getRevisionSchema(request):#DONE
+def getRevisionSchema(request):#TOTALY DONE
     sch = Schema.objects.get(name="revision")
-    return HttpResponse(content=sch.text, status_code=200, content_type="text/xml")
+    return HttpResponse(content='<?xml version="1.0" encoding="UTF-8"?>\n' + sch.text, status=200, content_type="text/xml")
 
-def getLetterSchema(request):#DONE
+def getLetterSchema(request):#TOTALY DONE
     sch = Schema.objects.get(name="letter")
-    return HttpResponse(content=sch.text, status_code=200, content_type="text/xml")
+    return HttpResponse(content='<?xml version="1.0" encoding="UTF-8"?>\n' + sch.text, status=200, content_type="text/xml")
     
-def getQuestionnaireSchema(request):#DONE
+def getQuestionnaireSchema(request):#TOTALY DONE
     sch = Schema.objects.get(name="questionnaire")
-    return HttpResponse(content=sch.text, status_code=200, content_type="text/xml")
+    return HttpResponse(content='<?xml version="1.0" encoding="UTF-8"?>\n' + sch.text, status=200, content_type="text/xml")
 ######################
 
 #LOGIN/REGISTER##########
-def loginF(request):#DONE
+@csrf_exempt
+def loginF(request):#TOTALY DONE
     username = request.POST['username']
     password = request.POST['password']
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
+        return redirect('/paper/searchPapers/')
     else:
-        return HttpResponse(status_code=400)
+        return redirect('/paper/loginPage/')
 
 @csrf_exempt
-def registerF(request):#DONE
+def registerF(request):#TOTALY DONE
     username = request.POST['username']
     password = request.POST['password']
+    password2 = request.POST['password2']
+    if(password!=password2):
+        return redirect('/paper/registerPage')
     email = request.POST['email']
     name = request.POST['name']
     surname = request.POST['surname']
+    if User.objects.filter(username=username).exists():
+        return redirect('/paper/registerPage')
     ser = User.objects.create_user(username, email, password, first_name=name, last_name =surname)
     groupR, created = Group.objects.get_or_create(name='reviewer')
     groupA, created = Group.objects.get_or_create(name='author')
     ser.groups.add(groupA)
     ser.groups.add(groupR)
     ser.save()
+    return redirect('/paper/loginPage')
     
-def logoutF(request):#DONE
+def logoutF(request):#TOTALY DONE
     logout(request)
+    return redirect('/paper/searchPapers')
 
-def loginP(request):#DONE
+def loginP(request):#TOTALY DONE
     template = loader.get_template("static/login.html")
     return HttpResponse(template.render())
 
-def registerP(request):#DONE
+def registerP(request):#TOTALY DONE
     template = loader.get_template("static/register.html")
     return HttpResponse(template.render())
 ##########################
