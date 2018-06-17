@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns="http://localhost:8080/paper/LetterSchema"
-    targetNamespace="http://localhost:8080/paper/LetterSchema" elementFormDefault="qualified">
-
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://localhost:8000/paper/LetterSchema" 
+    xmlns="http://localhost:8000/paper/LetterSchema" >
     <xs:element name="letter">
         <xs:complexType>
             <xs:sequence>

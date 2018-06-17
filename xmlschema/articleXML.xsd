@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
-    targetNamespace="http://localhost:8080/paper/ArticleSchema"
-    xmlns="http://localhost:8080/paper/ArticleSchema">
+    targetNamespace="http://localhost:8000/paper/ArticleSchema"
+    xmlns="http://localhost:8000/paper/ArticleSchema">
     <xs:element name="article">
         <xs:complexType>
             <xs:sequence>
@@ -31,7 +31,7 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="classification">
+            <xs:attribute name="classification" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="Research paper"/>
@@ -58,7 +58,6 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element ref="keywords"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -72,7 +71,7 @@
     <xs:element name="section">
         <xs:complexType>
             <xs:sequence maxOccurs="1" minOccurs="1">
-                <xs:element name="title" type="xs:string"/>
+                <xs:element name="stitle" type="xs:string"/>
                 <xs:choice maxOccurs="unbounded">
                     <xs:element ref="paragraph" maxOccurs="1" minOccurs="1"/>
                     <xs:element name="figures" maxOccurs="1" minOccurs="0" type="xs:string"/>
