@@ -90,22 +90,12 @@
                             <span>Published papers</span>
                         </a>
                     </li>
-                    {%if user|is_pub %}
-                    <li class="">
-                        <a class="" href="{% url 'sumbitedPapersPage' %}">
-                            <i class="icon_table"></i>
-                            <span>Publishing</span>
-                        </a>
-                    </li>
-
-                    {%else%}
                     <li class="">
                         <a class="" href="{% url 'myPapersPage' %}">
                             <i class="icon_documents_alt"></i>
                             <span>My papers</span>
                         </a>
                     </li>
-                    {%endif%}
                     <li class="">
                         <a class="" href="{% url 'pendingRevisionsPage' %}">
                             <i class="icon_documents_alt"></i>
@@ -132,9 +122,6 @@
                     </div>
                 </div>
                 <!-- page start-->
-
-
-
                 <form method="POST" action="{% url 'submitPaper' %}" enctype="multipart/form-data">
                     <input type="hidden" name="paper_id" value="{{paper.id}}">
                     <div class="row">

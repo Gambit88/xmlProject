@@ -90,24 +90,28 @@
                             <span>Published papers</span>
                         </a>
                     </li>
+                    {%if showPaper %}
                     <li class="">
                         <a class="" href="{% url 'myPapersPage' %}">
                             <i class="icon_documents_alt"></i>
                             <span>My papers</span>
                         </a>
                     </li>
+                    {%endif%}
                     <li class="">
                         <a class="" href="{% url 'pendingRevisionsPage' %}">
                             <i class="icon_documents_alt"></i>
                             <span>Revision</span>
                         </a>
                     </li>
+                    {%if not showPaper%}
                     <li class="">
                         <a class="" href="{% url 'sumbitedPapersPage' %}">
                             <i class="icon_table"></i>
                             <span>Publishing</span>
                         </a>
                     </li>
+                    {%endif%}
                 </ul>
                 <!-- sidebar menu end-->
             </div>

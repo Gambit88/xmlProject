@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from django.template import loader,Library
+from django.template import loader
 from django.http import HttpResponse
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate, login, logout
@@ -18,13 +18,6 @@ from paper.models import Paper,Recension,Questionnaire,Schema
 
 import requests
 from requests.auth import HTTPDigestAuth
-
-lib = Library() 
-
-@lib.filter(name='is_pub') 
-def has_group(user):
-    group =  Group.objects.get(name="publisher") 
-    return group in user.groups.all() 
 
 def sendEmail(email,message,subject):#DONE
     fromaddr = "tp4restoranii@gmail.com"
@@ -154,7 +147,7 @@ def myPapers(request):#TOTALY DONE
         if searchType=="t":
             searchContent = request.GET.get('text')
             papers = Paper.objects.filter(author__id = request.user.id,deleted=False,text__contains=searchContent).defer("text")
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
         else:
             searchTitle = request.GET.get('title',"")
             searchStatus = request.GET.get('status',"")
@@ -165,10 +158,10 @@ def myPapers(request):#TOTALY DONE
             if searchKeywords!="":
                 for keyword in str(searchKeywords).split(','):
                     papers = papers.filter(keywords__contains=keyword)
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
     except:
         papers = Paper.objects.filter(author__id = request.user.id,deleted=False).defer("text")
-        return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
+        return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
 
 def revision(request,paper_id):
     article = Paper.objects.get(id=paper_id)
@@ -193,7 +186,12 @@ def revision(request,paper_id):
 def pendingRevisions(request):#TOTALY DONE
     template = loader.get_template("pendingRevisionsPage.html")
     rev = Paper.objects.filter(reviewer__username=request.user.username)
-    return HttpResponse(template.render({'papers':rev, 'user':request.user}))
+    try:
+        utest = User.objects.get(id=request.user.id,groups__name='publisher')
+        a = False
+    except:
+        a = True
+    return HttpResponse(template.render({'papers':rev, 'user':request.user, 'showPaper':a}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -213,8 +211,13 @@ def revisionPage(request,paper_id):#TOTALY DONE
     template = loader.get_template("revisionPage.html")
     id = paper_id
     article = Paper.objects.get(id=id, reviewer__id=request.user.id)
+    try:
+        utest = User.objects.get(id=request.user.id,groups__name='publisher')
+        a = False
+    except:
+        a = True
     questionnaire = Questionnaire.objects.get(paper__id=article.id,reviewer__id=request.user.id)
-    return HttpResponse(template.render({'paper':article, 'questionnaire':questionnaire, 'user':request.user}))
+    return HttpResponse(template.render({'paper':article, 'questionnaire':questionnaire, 'user':request.user, 'showPaper':a}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -390,11 +393,16 @@ def setWritingState(request,paper_id):#DONE
 def searchPage(request):#TOTALY DONE (I HOPE)
     template = loader.get_template("searchPapersPage.html")
     try:
+        utest = User.objects.get(id=request.user.id,groups__name='publisher')
+        a = False
+    except:
+        a = True
+    try:
         searchType = request.GET.get('type')
         if searchType=="t":
             searchContent = request.GET.get('text')
             papers = Paper.objects.filter(status='4',deleted=False,text__contains=searchContent).defer("text")
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated, 'showPaper':a}))
         else:
             searchTitle = request.GET.get('title',"")
             searchAuthor = request.GET.get('author',"")
@@ -405,10 +413,10 @@ def searchPage(request):#TOTALY DONE (I HOPE)
             if searchKeywords!="":
                 for keyword in str(searchKeywords).split(','):
                     papers = papers.objects.filter(keywords__contains=keyword)
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated, 'showPaper':a}))
     except:
         papers = Paper.objects.filter(status='4',deleted=False).defer("text")
-        return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated}))
+        return HttpResponse(template.render({'papers':papers,'user':request.user,'logedIn':request.user.is_authenticated, 'showPaper':a}))
     
 
 def getPaper(request,paper_id):

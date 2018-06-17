@@ -30,7 +30,7 @@
       <script src="js/lte-ie7.js"></script>
     <![endif]-->
 
-    <!-- =======================================================
+  <!-- =======================================================
       Theme Name: NiceAdmin
       Theme URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
       Author: BootstrapMade
@@ -44,11 +44,15 @@
     <!--header start-->
     <header class="header dark-bg">
       <div class="toggle-nav">
-        <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"><i class="icon_menu"></i></div>
+        <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom">
+          <i class="icon_menu"></i>
+        </div>
       </div>
 
       <!--logo start-->
-      <a href="{% url 'searchPapersPage' %}" class="logo">Publishing <span class="lite">Papers</span></a>
+      <a href="{% url 'searchPapersPage' %}" class="logo">Publishing
+        <span class="lite">Papers</span>
+      </a>
       <!--logo end-->
       <div class="top-nav notification-row">
         <!-- notificatoin dropdown start-->
@@ -56,22 +60,24 @@
           <!-- user login dropdown start-->
           <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            {% if logedIn %}
-                                <span class="username">{{ user.first_name }} {{ user.last_name }}</span>
-                                <b class="caret"></b>
-                            {% elif True %}
-                                <span class="username">Public User</span>
-                                <b class="caret"></b>
-                            {% endif %}
-                        </a>
+              {% if logedIn %}
+              <span class="username">{{ user.first_name }} {{ user.last_name }}</span>
+              <b class="caret"></b>
+              {% elif True %}
+              <span class="username">Public User</span>
+              <b class="caret"></b>
+              {% endif %}
+            </a>
             <ul class="dropdown-menu extended logout">
               <div class="log-arrow-up"></div>
               <li>
-                    {% if logedIn %}
-                    <a href="{% url 'logout' %}"><i class="icon_key_alt"></i> Log Out</a>
-                    {% elif True %}
-                    <a href="{% url 'loginP' %}"><i class="icon_key_alt"></i> Log In</a>
-                    {% endif %}
+                {% if logedIn %}
+                <a href="{% url 'logout' %}">
+                  <i class="icon_key_alt"></i> Log Out</a>
+                {% elif True %}
+                <a href="{% url 'loginP' %}">
+                  <i class="icon_key_alt"></i> Log In</a>
+                {% endif %}
               </li>
             </ul>
           </li>
@@ -89,28 +95,34 @@
         <ul class="sidebar-menu">
           <li class="">
             <a class="" href="{% url 'searchPapersPage' %}">
-                          <i class="icon_document_alt"></i>
-                          <span>Published papers</span>
-                      </a>
+              <i class="icon_document_alt"></i>
+              <span>Published papers</span>
+            </a>
           </li>
+          {%if logedIn%}
+          {%if showPaper%}
           <li class="">
-                <a class="" href="{% url 'myPapersPage' %}">
-                              <i class="icon_documents_alt"></i>
-                              <span>My papers</span>
-                          </a>
+            <a class="" href="{% url 'myPapersPage' %}">
+              <i class="icon_documents_alt"></i>
+              <span>My papers</span>
+            </a>
           </li>
+          {%endif%}
           <li class="">
-                <a class="" href="{% url 'pendingRevisionsPage' %}">
-                              <i class="icon_documents_alt"></i>
-                              <span>Revision</span>
-                          </a>
-              </li>
-            <li class="">
-                <a class="" href="{% url 'sumbitedPapersPage' %}">
-                    <i class="icon_table"></i>
-                    <span>Publishing</span>
-                </a>
-            </li>
+            <a class="" href="{% url 'pendingRevisionsPage' %}">
+              <i class="icon_documents_alt"></i>
+              <span>Revision</span>
+            </a>
+          </li>
+          {%if not showPaper%}
+          <li class="">
+            <a class="" href="{% url 'sumbitedPapersPage' %}">
+              <i class="icon_table"></i>
+              <span>Publishing</span>
+            </a>
+          </li>
+          {%endif%}
+          {%endif%}
         </ul>
         <!-- sidebar menu end-->
       </div>
@@ -121,110 +133,111 @@
       <section class="wrapper">
         <div class="row">
           <div class="col-lg-12">
-            <h3 class="page-header"><i class="icon_document_alt"></i> Published papers</h3>
+            <h3 class="page-header">
+              <i class="icon_document_alt"></i> Published papers</h3>
           </div>
         </div>
         <!-- page start-->
         <div class="row">
-            <div class="col-lg-12">
-                <!--collapse start-->
-                <div class="panel-group m-bot20" id="accordion">
-                    <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h4 class="panel-title">
-                                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                                                Meta Data Search
-                                            </a>
-                                        </h4>
+          <div class="col-lg-12">
+            <!--collapse start-->
+            <div class="panel-group m-bot20" id="accordion">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                      Meta Data Search
+                    </a>
+                  </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <!--search satart-->
+                    <form class="form-horizontal " method="get" href="{% url 'searchPapersPage' %}">
+                      <input type="hidden" name="type" value="m">
+                      <div class="form-group">
+                        <label class="col-sm-2 control-label">Title</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name="title">
+                        </div>
                       </div>
-                      <div id="collapseOne" class="panel-collapse collapse">
-                        <div class="panel-body">
-                            <!--search satart-->
-                                <form class="form-horizontal " method="get" href="{% url 'searchPapersPage' %}">
-                                    <input type="hidden" name="type" value="m">
-                                    <div class="form-group">
-                                        <label class="col-sm-2 control-label">Title</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="title">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-2 control-label">Author(last name)</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name='author'>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                            <label class="col-sm-2 control-label">Publisher(last name)</label>
-                                            <div class="col-sm-10">
-                                                <input type="text" class="form-control" name='publisher'>
-                                            </div>
-                                        </div>
-                                    <div class="form-group">
-                                        <label class="control-label col-lg-2" for="inputSuccess">Paper type</label>
-                                        <div class="col-lg-10">
-                                            <select class="form-control m-bot15" name='paperType'>
-                                                                <option></option>
-                                                                <option>Research paper</option>
-                                                                <option>Viewpoint</option>
-                                                                <option>Technical paper</option>
-                                                                <option>Conceptual paper</option>
-                                                                <option>Case study</option>
-                                                                <option>Literature review</option>
-                                                                <option>General review</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                            <label class="col-sm-2 control-label">Keywords(separate with comma)</label>
-                                            <div class="col-sm-10">
-                                                <input type="text" class="form-control" name="keywords" placeholder='keyword1,keyword2,keyword3'>
-                                            </div>
-                                    </div>
-                                    <div class="form-group">
-                                            <div class="col-lg-offset-2 col-lg-10">
-                                              <button type="submit" class="btn btn-primary">Search</button>
-                                            </div>
-                                          </div>
+                      <div class="form-group">
+                        <label class="col-sm-2 control-label">Author(last name)</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name='author'>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="col-sm-2 control-label">Publisher(last name)</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name='publisher'>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-lg-2" for="inputSuccess">Paper type</label>
+                        <div class="col-lg-10">
+                          <select class="form-control m-bot15" name='paperType'>
+                            <option></option>
+                            <option>Research paper</option>
+                            <option>Viewpoint</option>
+                            <option>Technical paper</option>
+                            <option>Conceptual paper</option>
+                            <option>Case study</option>
+                            <option>Literature review</option>
+                            <option>General review</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="col-sm-2 control-label">Keywords(separate with comma)</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name="keywords" placeholder='keyword1,keyword2,keyword3'>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                          <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                      </div>
 
-                                </form>
-                                <!--search end-->
-                        </div>
-                      </div>
-                    </div>
-                    <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h4 class="panel-title">
-                                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-                                                    Text Search
-                                            </a>
-                                        </h4>
-                      </div>
-                      <div id="collapseTwo" class="panel-collapse collapse">
-                        <div class="panel-body">
-                                <!--search start-->
-                                <form class="form-horizontal " method="get" href="{% url 'searchPapersPage' %}">
-                                        <input type="hidden" name="type" value="t">
-                                        <div class="form-group">
-                                                <label class="col-sm-2 control-label">Text</label>
-                                                <div class="col-sm-10">
-                                                    <input type="text" class="form-control" name="text">
-                                                </div>
-                                        </div>
-                                        <div class="form-group">
-                                                <div class="col-lg-offset-2 col-lg-10">
-                                                  <button type="submit" class="btn btn-primary">Search</button>
-                                                </div>
-                                              </div>
-                                </form>
-                                <!--search end-->
-                                      
-                        </div>
-                      </div>
-                    </div>
+                    </form>
+                    <!--search end-->
                   </div>
-                  <!--collapse end-->
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                      Text Search
+                    </a>
+                  </h4>
+                </div>
+                <div id="collapseTwo" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <!--search start-->
+                    <form class="form-horizontal " method="get" href="{% url 'searchPapersPage' %}">
+                      <input type="hidden" name="type" value="t">
+                      <div class="form-group">
+                        <label class="col-sm-2 control-label">Text</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" name="text">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                          <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                      </div>
+                    </form>
+                    <!--search end-->
+
+                  </div>
+                </div>
+              </div>
             </div>
+            <!--collapse end-->
+          </div>
         </div>
         <div class="row">
           <div class="col-lg-12">
@@ -233,11 +246,15 @@
               <table class="table table-striped table-advance table-hover">
                 <tbody>
                   <tr>
-                    <th><i class="icon_document_alt"></i> Title</th>
-                    <th><i class="icon_profile"></i> Author</th>
-                    <th><i class="icon_profile"></i> Publisher</th>
+                    <th>
+                      <i class="icon_document_alt"></i> Title</th>
+                    <th>
+                      <i class="icon_profile"></i> Author</th>
+                    <th>
+                      <i class="icon_profile"></i> Publisher</th>
                     <th> Paper Type</th>
-                    <th><i class="icon_cogs"></i> Action</th>
+                    <th>
+                      <i class="icon_cogs"></i> Action</th>
                   </tr>
                   {% for paper in papers %}
                   <tr>
@@ -247,14 +264,20 @@
                     <td>{{paper.paper_type}}</td>
                     <td>
                       <div class="btn-group">
-                        <a class="btn btn-primary" href="{% url 'viewPaperPage' paper_id=paper.id %}"><i class="icon_document_alt"></i></a>
-                        <a class="btn btn-success" href="{% url 'getPaperXml' paper_id=paper.id %}"><i class="icon_document_alt"></i></a>
-                        <a class="btn btn-danger" href="{% url 'getPaperPdf' paper_id=paper.id %}"><i class="icon_document_alt"></i></a>
+                        <a class="btn btn-primary" href="{% url 'viewPaperPage' paper_id=paper.id %}">
+                          <i class="icon_document_alt"></i>
+                        </a>
+                        <a class="btn btn-success" href="{% url 'getPaperXml' paper_id=paper.id %}">
+                          <i class="icon_document_alt"></i>
+                        </a>
+                        <a class="btn btn-danger" href="{% url 'getPaperPdf' paper_id=paper.id %}">
+                          <i class="icon_document_alt"></i>
+                        </a>
                       </div>
                     </td>
                   </tr>
                   {% endfor %}
-                  
+
                 </tbody>
               </table>
             </section>
@@ -266,14 +289,15 @@
     <!--main content end-->
     <div class="text-right">
       <div class="credits">
-          <!--
+        <!--
             All the links in the footer should remain intact.
             You can delete the links only if you purchased the pro version.
             Licensing information: https://bootstrapmade.com/license/
             Purchase the pro version form: https://bootstrapmade.com/buy/?theme=NiceAdmin
           -->
-          Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-        </div>
+        Designed by
+        <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
     </div>
   </section>
   <!-- container section end -->
