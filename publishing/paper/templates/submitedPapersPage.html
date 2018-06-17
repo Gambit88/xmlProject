@@ -148,17 +148,20 @@
                     <td>{{paper.rec_total}}</td>
                     <td>
                       <div class="btn-group">
-                        <a class="btn btn-primary" href="{% url 'viewPaperPage' paper_id=paper.id %}">
+                        <!--<a class="btn btn-primary" href="{% url 'viewPaperPage' paper_id=paper.id %}">
                           <i class="icon_document_alt"></i>
-                        </a>
+                        </a>-->
                         <a class="btn btn-success" href="{% url 'getPaperXml' paper_id=paper.id %}">
                           <i class="icon_document_alt"></i>
                         </a>
-                        <a class="btn btn-danger" href="{% url 'getPaperPdf' paper_id=paper.id %}">
+                        <!--<a class="btn btn-danger" href="{% url 'getPaperPdf' paper_id=paper.id %}">
                           <i class="icon_document_alt"></i>
-                        </a>
+                        </a>-->
                         <a class="btn btn-info" href="{% url 'checkReview' paper_id=paper.id %}">
                           <i class="icon_document_alt"></i>
+                        </a>
+                        <a class="btn btn-info" href="{% url 'checkQus' paper_id=paper.id %}">
+                            <i class="icon_documents_alt"></i>
                         </a>
                       </div>
                     </td>

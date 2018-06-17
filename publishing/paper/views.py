@@ -163,18 +163,14 @@ def myPapers(request):#TOTALY DONE
         papers = Paper.objects.filter(author__id = request.user.id,deleted=False).defer("text")
         return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
 
+@login_required(login_url="/paper/loginPage")
 def revision(request,paper_id):
     article = Paper.objects.get(id=paper_id)
     if article.author.id == request.user.id or article.publisher.id == request.user.id:
-        text = ""
+        root = etree.Element("allReviews")
         for rev in article.recension.all():
-            text = text + "\n" + rev.text
-        if text!="":
-            root = etree.Element("allReviews")
-            root.append(etree.fromstring(text))
-            return HttpResponse(content=etree.tostring(root),status=200, content_type="text/xml")
-        else:
-            return HttpResponse(content="<empty></empty>",status=200, content_type="text/xml")
+            root.append(etree.fromstring(rev.text))  
+        return HttpResponse(content=etree.tostring(root),status=200, content_type="text/xml")
     else:
         return redirect('/paper/searchPapers/')
     
@@ -281,6 +277,17 @@ def getQu(request,q_id):
     text = article.text
     return HttpResponse(content=text,status=200, content_type="text/xml")
 
+@login_required(login_url="/paper/loginPage")
+def checkQu(request,paper_id):
+    articles = Questionnaire.objects.filter(paper__id=paper_id)
+    paper = Paper.objects.get(id=paper_id)
+    if paper.publisher.id == request.user.id:
+        root = etree.Element("allQuestionnaires")
+        for rev in articles:
+            root.append(etree.fromstring(rev.text))  
+        return HttpResponse(content=etree.tostring(root),status=200, content_type="text/xml")
+    else:
+        return redirect('/paper/searchPapers/')
 #######################################################
 
 #PUBLISHER CONTROL##################

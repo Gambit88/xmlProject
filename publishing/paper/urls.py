@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'^submitReview/', views.uploadRevision, name="submitReview"),
     url(r'^refuseRevision/(?P<paper_id>\d+)', views.refuseRevision, name="refuseRevision"),
     url(r'^questionnaire/(?P<q_id>\d+)', views.getQu, name="questXml"),
+    url(r'^checkQus/(?P<paper_id>\d+)', views.checkQu, name="checkQus"),
 
     url(r'^submitedPapers/', views.submitedPapersPage, name="sumbitedPapersPage"),
     url(r'^appointingRevisions/(?P<paper_id>\d+)', views.appointRevisionPage,name="appointRevisionPage"),
