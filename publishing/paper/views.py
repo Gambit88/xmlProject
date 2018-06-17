@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from django.template import loader
+from django.template import loader,template
 from django.http import HttpResponse
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate, login, logout
@@ -18,6 +18,13 @@ from paper.models import Paper,Recension,Questionnaire,Schema
 
 import requests
 from requests.auth import HTTPDigestAuth
+
+lib = template.Library() 
+
+@lib.filter(name='is_pub') 
+def has_group(user):
+    group =  Group.objects.get(name="publisher") 
+    return group in user.groups.all() 
 
 def sendEmail(email,message,subject):#DONE
     fromaddr = "tp4restoranii@gmail.com"
@@ -44,15 +51,18 @@ def sendEmail(email,message,subject):#DONE
 def uploadPage(request):#TOTALY DONE
     template = loader.get_template("writePaperPage.html")
     publisherList = User.objects.filter(groups__name='publisher')
-    return HttpResponse(template.render({'publishers':publisherList}))
+    return HttpResponse(template.render({'publishers':publisherList,'rewrite':False, 'user':request.user}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_paper')
-def rewritePage(request,paper_id):#DONE
+def rewritePage(request,paper_id):#TOTALY DONE
     paper = Paper.objects.get(id=paper_id,author__id=request.user.id)
-    text = paper.text
+
+    publisherList = []
+    publisherList.append(paper.publisher)
+
     template = loader.get_template("writePaperPage.html")
-    return HttpResponse(template.render({'text':text}))
+    return HttpResponse(template.render({'publishers':publisherList, 'paper':paper,'rewrite':True, 'user':request.user}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_paper')
@@ -60,10 +70,9 @@ def rewritePage(request,paper_id):#DONE
 def upload(request):#TOTALY DONE
     paperFile = request.FILES['paper']
     letterFile = request.FILES['letter']
-    try:
-        paper_id = request.POST.get('paper_id')
-    except:
-        paper_id = None
+
+    paper_id = request.POST.get('paper_id')
+
     sch = Schema.objects.get(name="paper")
     schema = sch.text
     schema_doc = etree.fromstring(schema)
@@ -99,7 +108,7 @@ def upload(request):#TOTALY DONE
     for el in paperDoc.iter('{*}article'):
         paper_type = el.attrib['classification']
 
-    if paper_id==None:
+    if paper_id=="":
         paper = Paper()
         paper.title = title
         paper.status = '0'
@@ -145,7 +154,7 @@ def myPapers(request):#TOTALY DONE
         if searchType=="t":
             searchContent = request.GET.get('text')
             papers = Paper.objects.filter(author__id = request.user.id,deleted=False,text__contains=searchContent).defer("text")
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
         else:
             searchTitle = request.GET.get('title',"")
             searchStatus = request.GET.get('status',"")
@@ -156,10 +165,26 @@ def myPapers(request):#TOTALY DONE
             if searchKeywords!="":
                 for keyword in str(searchKeywords).split(','):
                     papers = papers.filter(keywords__contains=keyword)
-            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
+            return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
     except:
         papers = Paper.objects.filter(author__id = request.user.id,deleted=False).defer("text")
-        return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES}))
+        return HttpResponse(template.render({'papers':papers,'user':request.user,'types':Paper.Type_CHOICES, 'user':request.user}))
+
+def revision(request,paper_id):
+    article = Paper.objects.get(id=paper_id)
+    if article.author.id == request.user.id or article.publisher.id == request.user.id:
+        text = ""
+        for rev in article.recension.all():
+            text = text + "\n" + rev.text
+        if text!="":
+            root = etree.Element("allReviews")
+            root.append(etree.fromstring(text))
+            return HttpResponse(content=etree.tostring(root),status=200, content_type="text/xml")
+        else:
+            return HttpResponse(content="<empty></empty>",status=200, content_type="text/xml")
+    else:
+        return redirect('/paper/searchPapers/')
+    
 #######################################################################
 
 #REVISION CCONTROL######################################
@@ -168,7 +193,7 @@ def myPapers(request):#TOTALY DONE
 def pendingRevisions(request):#TOTALY DONE
     template = loader.get_template("pendingRevisionsPage.html")
     rev = Paper.objects.filter(reviewer__username=request.user.username)
-    return HttpResponse(template.render({'papers':rev}))
+    return HttpResponse(template.render({'papers':rev, 'user':request.user}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -189,45 +214,62 @@ def revisionPage(request,paper_id):#TOTALY DONE
     id = paper_id
     article = Paper.objects.get(id=id, reviewer__id=request.user.id)
     questionnaire = Questionnaire.objects.get(paper__id=article.id,reviewer__id=request.user.id)
-    return HttpResponse(template.render({'paper':article, 'questionnaire':questionnaire}))
+    return HttpResponse(template.render({'paper':article, 'questionnaire':questionnaire, 'user':request.user}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
 @csrf_exempt
-def uploadRevision(request):#DONE
-    #prvo parsirati
-    sch = Schema.objects.get(name="revision")
-    schema = StringIO(sch.text)
-    schema_doc = etree.parse(schema)
-    xmlschema = etree.XMLSchema(schema_doc)
-    message = request.POST.body
-    doc = etree.parse(message)
-    if xmlschema.validate(doc)==False:
-        return HttpResponse(status=400)#revizija ne odgovara semi
-    sch = Schema.objects.get(name="questionnaire")
-    schema = StringIO(sch.text)
-    schema_doc = etree.parse(schema)
-    xmlschema = etree.XMLSchema(schema_doc)
-    message = request.POST.get('questionnaire')
-    doc = etree.parse(message)
-    if xmlschema.validate(doc)==False:
-        return HttpResponse(status=400)#upitinik ne odgovara semi
+def uploadRevision(request):#TOTALY DONE
+    revFile = request.FILES['rev']
+    questFile = request.FILES['quest']
+    letterFile = request.FILES['letter']
     
-    id = int(request.POST.get('articleId'))
-    article = Paper.objects.get(id=id)
-    questionnaire = Qlog()
-    questionnaire.text=message
+    paper_id = request.POST.get('paper_id')
+    q_id = request.POST.get('q_id')
+    
+    sch = Schema.objects.get(name="revision")
+    schema = sch.text
+    schema_doc = etree.fromstring(schema)
+    xmlschema = etree.XMLSchema(schema_doc)
+
+    revDoc = etree.parse(revFile)
+    if xmlschema.validate(revDoc)==False:
+        return redirect('/paper/reviewPaper/'+paper_id)#revizija ne odgovara semi
+
+    sch = Schema.objects.get(name="questionnaire")
+    schema = sch.text
+    schema_doc = etree.fromstring(schema)
+    xmlschema = etree.XMLSchema(schema_doc)
+
+    questDoc = etree.parse(questFile)
+    if xmlschema.validate(questDoc)==False:
+        return redirect('/paper/reviewPaper/'+paper_id)#upitnik ne odgovara semi
+    
+    sch = Schema.objects.get(name="letter")
+    schema = sch.text
+    schema_doc = etree.fromstring(schema)
+    xmlschema = etree.XMLSchema(schema_doc)
+
+    doc = etree.parse(letterFile)
+    if xmlschema.validate(doc)==False:
+        return redirect('/paper/reviewPaper/'+paper_id)#pismo ne odgovara semi
+    
+    q = etree.tostring(questDoc).decode('UTF-8')
+    rev = etree.tostring(revDoc).decode('UTF-8')
+    message = etree.tostring(doc).decode('UTF-8')
+    
+    article = Paper.objects.get(id=paper_id)
+    questionnaire = Questionnaire.objects.get(id=q_id,reviewer__id=request.user.id,paper__id=paper_id)
+    questionnaire.text=q
     questionnaire.save()
     rr = Recension()
-    rr.text = request.POST.body
-    rr.qlog = questionnaire
+    rr.text = rev
     rr.save()
     article.recension.add(rr)
     article.rec_completed = article.rec_completed+1
     article.reviewer.remove(request.user)
     article.save()
-    template = loader.get_template("static/completedPaper.html")
-    return  HttpResponse(template.render())
+    return  redirect('/paper/pendingRevisions/')
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -244,7 +286,7 @@ def getQu(request,q_id):
 def submitedPapersPage(request):#TOTALY DONE
     template = loader.get_template("submitedPapersPage.html")
     articles = Paper.objects.filter(publisher__id = request.user.id,deleted=False)
-    return HttpResponse(template.render({'papers':articles}))
+    return HttpResponse(template.render({'papers':articles, 'user':request.user}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.can_publish')
@@ -258,7 +300,7 @@ def appointRevisionPage(request,paper_id):#TOTALY DONE, No time for suggested
         object_id_list.append(user.id)
     reviewers = User.objects.filter(groups__name='reviewer').exclude(id__in=object_id_list)
     if article.publisher.id == request.user.id:
-        return HttpResponse(template.render({'paper':article,'reviewers':reviewers}))
+        return HttpResponse(template.render({'paper':article,'reviewers':reviewers, 'user':request.user}))
     return redirect("/paper/submitedPapers")
 
 @login_required(login_url="/paper/loginPage")

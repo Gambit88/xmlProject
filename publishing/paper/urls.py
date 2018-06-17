@@ -20,28 +20,27 @@ from . import views
 
 urlpatterns = [
     url(r'^writePaper/', views.uploadPage, name="writePaperPage"),
-    url(r'^rewritePaper/(?P<paper_id>\d+)',
-        views.rewritePage, name="reWritePaperPage"),
+    url(r'^rewritePaper/(?P<paper_id>\d+)',views.rewritePage, name="reWritePaperPage"),
     url(r'^submitPaper/', views.upload, name="submitPaper"),
     url(r'^pullPaper/(?P<paper_id>\d+)', views.pullPaper, name="pullPaper"),
-    url(r'^searchPapers/', views.searchPage, name="searchPapersPage"),
     url(r'^myPapers/', views.myPapers, name="myPapersPage"),
+    url(r'^checkReview/(?P<paper_id>\d+)', views.revision, name="checkReview"),
+
+    url(r'^searchPapers/', views.searchPage, name="searchPapersPage"),
     url(r'^viewPaper/(?P<paper_id>\d+)', views.getPaper, name="viewPaperPage"),
-    url(r'^getPaperXml/(?P<paper_id>\d+)',
-        views.getPaperXml, name="getPaperXml"),
-    url(r'^getPaperPdf/(?P<paper_id>\d+)',
-        views.getPaperPdf, name="getPaperPdf"),
+    url(r'^getPaperXml/(?P<paper_id>\d+)',views.getPaperXml, name="getPaperXml"),
+    url(r'^getPaperPdf/(?P<paper_id>\d+)',views.getPaperPdf, name="getPaperPdf"),
+
     url(r'^pendingRevisions/', views.pendingRevisions, name="pendingRevisionsPage"),
-    url(r'^reviewPaper/(?P<paper_id>\d+)',
-        views.revisionPage, name="revisionPage"),
+    url(r'^reviewPaper/(?P<paper_id>\d+)', views.revisionPage, name="revisionPage"),
     url(r'^submitReview/', views.uploadRevision, name="submitReview"),
     url(r'^refuseRevision/(?P<paper_id>\d+)', views.refuseRevision, name="refuseRevision"),
     url(r'^questionnaire/(?P<q_id>\d+)', views.getQu, name="questXml"),
 
     url(r'^submitedPapers/', views.submitedPapersPage, name="sumbitedPapersPage"),
-    url(r'^appointingRevisions/(?P<paper_id>\d+)', views.appointRevisionPage,
-        name="appointRevisionPage"),
+    url(r'^appointingRevisions/(?P<paper_id>\d+)', views.appointRevisionPage,name="appointRevisionPage"),
     url(r'^appointRevision/', views.appointRevision, name="appointRevision"),
+
     url(r'^setAcceptedState/(?P<paper_id>\d+)', views.setAcceptedState, name="setAcceptedState"),
     url(r'^setRefusedState/(?P<paper_id>\d+)', views.setRefusedState, name="setRefusedState"),
     url(r'^setRevisionState/(?P<paper_id>\d+)', views.setRevisionState, name="setRevisionState"),
@@ -50,8 +49,7 @@ urlpatterns = [
     url(r'^ArticleSchema/', views.getPaperSchema, name="ArticleSchema"),
     url(r'^RevisionSchema/', views.getRevisionSchema, name="RevisionSchema"),
     url(r'^LetterSchema/', views.getLetterSchema, name="LetterSchema"),
-    url(r'^QuestionnaireSchema/', views.getQuestionnaireSchema,
-        name="QuestionnaireSchema"),
+    url(r'^QuestionnaireSchema/', views.getQuestionnaireSchema,name="QuestionnaireSchema"),
 
     url(r'^login/', views.loginF, name="login"),
     url(r'^register/', views.registerF, name="register"),

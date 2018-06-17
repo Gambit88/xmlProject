@@ -136,6 +136,8 @@
                       <i class="icon_profile"></i> Author</th>
                     <th> Satus</th>
                     <th> Paper Type</th>
+                    <th> Revised</th>
+                    <th> Total rervisions</th>
                     <th>
                       <i class="icon_cogs"></i> Action</th>
                     <th>
@@ -148,6 +150,8 @@
                     <td>{{paper.status}}</td>
                     <!--HERE-->
                     <td>{{paper.paper_type}}</td>
+                    <td>{{paper.rec_completed}}</td>
+                    <td>{{paper.rec_total}}</td>
                     <td>
                       <div class="btn-group">
                         <a class="btn btn-primary" href="{% url 'viewPaperPage' paper_id=paper.id %}">
@@ -159,6 +163,9 @@
                         <a class="btn btn-danger" href="{% url 'getPaperPdf' paper_id=paper.id %}">
                           <i class="icon_document_alt"></i>
                         </a>
+                        <a class="btn btn-info" href="{% url 'checkReview' paper_id=paper.id %}">
+                          <i class="icon_document_alt"></i>
+                        </a>
                       </div>
                     </td>
                     <td>
@@ -167,10 +174,13 @@
                         <a class="btn btn-primary" href="{% url 'appointRevisionPage' paper_id=paper.id %}">
                           <i class="icon_plus_alt2"></i>
                         </a>
-                        {% endif %} {% if paper.status == '2' or paper.status == '1' or paper.status == '0' %}
-                        <a class="btn btn-success" href="{% url 'revisionPage' paper_id=paper.id %}">
+                        {% endif %} {% if paper.status == '1' and paper.rec_completed == paper.rec_total or paper.status == '0' %}
+                        <a class="btn btn-success" href="{% url 'setAcceptedState' paper_id=paper.id %}">
                             <i class="icon_check_alt2"></i>
                           </a>
+                        <a class="btn btn-info" href="{% url 'setWritingState' paper_id=paper.id %}">
+                          <i class="icon_minus_alt2"></i>
+                        </a>
                         <a class="btn btn-danger" href="{% url 'setRefusedState' paper_id=paper.id %}">
                           <i class="icon_close_alt2"></i>
                         </a>

@@ -275,11 +275,8 @@
                     <td>
                       <div class="btn-group">
                         {% if paper.status == '2' %}
-                        <a class="btn btn-success" href="{% url 'reWritePaperPage' paper_id=paper.id %}">
+                        <a class="btn btn-info" href="{% url 'reWritePaperPage' paper_id=paper.id %}">
                           <i class="icon_plus_alt2"></i>
-                        </a>
-                        <a class="btn btn-primary" href="{% url 'reWritePaperPage' paper_id=paper.id %}">
-                          <i class="icon_download_alt2"></i>
                         </a>
                         {% endif %} {% if paper.status == '2' or paper.status == '1' or paper.status == '0' %}
                         <a class="btn btn-danger" href="{% url 'pullPaper' paper_id=paper.id %}">
