@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from django.template import loader,template
+from django.template import loader,Library
 from django.http import HttpResponse
 from django.contrib.auth.models import User,Group
 from django.contrib.auth import authenticate, login, logout
@@ -19,7 +19,7 @@ from paper.models import Paper,Recension,Questionnaire,Schema
 import requests
 from requests.auth import HTTPDigestAuth
 
-lib = template.Library() 
+lib = Library() 
 
 @lib.filter(name='is_pub') 
 def has_group(user):
