@@ -2,14 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
-class Qlog(models.Model):
-    text = models.CharField(max_length = 10000)
 
 class Recension(models.Model):
     text = models.CharField(max_length = 80000)
-    qlog = models.OneToOneField(Qlog, on_delete=models.CASCADE)
-    
     #paper_set.all() za paper objekte koji se rencezurisu
+
 class Paper(models.Model):
     title = models.CharField(max_length=100)
     Suggested='0'
@@ -44,4 +41,5 @@ class Schema(models.Model):
 
 class Questionnaire(models.Model):
     text = models.CharField(max_length = 10000)
-    paper = models.OneToOneField(Paper, on_delete=models.CASCADE)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
