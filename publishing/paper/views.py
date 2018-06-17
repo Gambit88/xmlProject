@@ -165,41 +165,31 @@ def myPapers(request):#TOTALY DONE
 #REVISION CCONTROL######################################
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
-def pendingRevisions(request):#DONE
+def pendingRevisions(request):#TOTALY DONE
     template = loader.get_template("pendingRevisionsPage.html")
-    rev = Paper.objects.filter(reviewer__id=request.user.id)
-    return HttpResponse(template.render({'revisions':rev}))
+    rev = Paper.objects.filter(reviewer__username=request.user.username)
+    return HttpResponse(template.render({'papers':rev}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
 @csrf_exempt
-def refuseRevision(request):#DONE
-    #proveriti validaciju poruke
-    sch = Schema.objects.get(name="letter")
-    schema = StringIO(sch.text)
-    schema_doc = etree.parse(schema)
-    xmlschema = etree.XMLSchema(schema_doc)
-    message = request.POST.get('message')
-    doc = etree.parse(message)
-    if xmlschema.validate(doc)==False:
-        return HttpResponse(status=400)#poruka ne odgovara semi
-    id = int(request.POST.get('articleId'))
+def refuseRevision(request,paper_id):#TOTALY DONE
+    id = paper_id
     article = Paper.objects.get(id=id)
     article.rec_total = article.rec_total-1
     article.reviewer.remove(request.user)
     article.save()
-    _thread.start_new_thread(sendEmail,(article.publisher.email,message,"Refused revision of " + str(article.title)))
-    return HttpResponse(status=200)
+    _thread.start_new_thread(sendEmail,(article.publisher.email,"User "+ request.user.first_name + " " + request.user.last_name +" has refused revision","Refused revision of " + str(article.title)))
+    return redirect('/paper/pendingRevisions/')
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
-def revisionPage(request):#DONE
+def revisionPage(request,paper_id):#TOTALY DONE
     template = loader.get_template("revisionPage.html")
-    id = int(request.GET.get('articleId'))
+    id = paper_id
     article = Paper.objects.get(id=id, reviewer__id=request.user.id)
-    paper = article.text
-    questionnaire = (Questionnaire.objects.get(paper__id=article.id)).text
-    return HttpResponse(template.render({'paper':paper, 'questionnaire':questionnaire}))
+    questionnaire = Questionnaire.objects.get(paper__id=article.id,reviewer__id=request.user.id)
+    return HttpResponse(template.render({'paper':article, 'questionnaire':questionnaire}))
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.add_recension')
@@ -238,6 +228,14 @@ def uploadRevision(request):#DONE
     article.save()
     template = loader.get_template("static/completedPaper.html")
     return  HttpResponse(template.render())
+
+@login_required(login_url="/paper/loginPage")
+@permission_required('paper.add_recension')
+def getQu(request,q_id):
+    article = Questionnaire.objects.get(id=q_id,reviewer__id=request.user.id)
+    text = article.text
+    return HttpResponse(content=text,status=200, content_type="text/xml")
+
 #######################################################
 
 #PUBLISHER CONTROL##################
@@ -266,7 +264,7 @@ def appointRevisionPage(request,paper_id):#TOTALY DONE, No time for suggested
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.can_publish')
 @csrf_exempt
-def appointRevision(request):#DONE
+def appointRevision(request):#TOTALY DONE
     questFile = request.FILES['quest']
     letterFile = request.FILES['letter']
     try:
@@ -308,7 +306,6 @@ def appointRevision(request):#DONE
     questionnaire.save()
     _thread.start_new_thread(sendEmail, (article.publisher.email,message,"Receved revision request for " + str(article.title)))
     return redirect("/paper/appointingRevisions/"+str(paper_id))
-
 
 @login_required(login_url="/paper/loginPage")
 @permission_required('paper.can_manage')
@@ -379,7 +376,7 @@ def getPaper(request,paper_id):
 
     return HttpResponse(template.render({}))
 
-def getPaperXml(request,paper_id):#DONE, NEEDS TESTING
+def getPaperXml(request,paper_id):#TOTALY DONE
     try:
         article = Paper.objects.get(id=paper_id, deleted=False,status='4')
         text = article.text
@@ -387,9 +384,9 @@ def getPaperXml(request,paper_id):#DONE, NEEDS TESTING
     except:
         article = Paper.objects.get(id=paper_id, deleted=False)
         if article.status=='1':
-            for user in article.reviewer:
+            for user in article.reviewer.all():
                 if user.id==request.user.id:
-                    doc = etree.fromstring(paper.text)
+                    doc = etree.fromstring(article.text)
                     for el in doc.iter('{*}name'):
                         el.text = ""
                     for el in doc.iter('{*}institute'):

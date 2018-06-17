@@ -168,7 +168,7 @@
                           <i class="icon_plus_alt2"></i>
                         </a>
                         {% endif %} {% if paper.status == '2' or paper.status == '1' or paper.status == '0' %}
-                        <a class="btn btn-success" href="{% url 'setAcceptedState' paper_id=paper.id %}">
+                        <a class="btn btn-success" href="{% url 'revisionPage' paper_id=paper.id %}">
                             <i class="icon_check_alt2"></i>
                           </a>
                         <a class="btn btn-danger" href="{% url 'setRefusedState' paper_id=paper.id %}">

@@ -23,7 +23,6 @@ urlpatterns = [
     url(r'^rewritePaper/(?P<paper_id>\d+)',
         views.rewritePage, name="reWritePaperPage"),
     url(r'^submitPaper/', views.upload, name="submitPaper"),
-    url(r'^submitReview/', views.uploadRevision, name="submitReview"),
     url(r'^pullPaper/(?P<paper_id>\d+)', views.pullPaper, name="pullPaper"),
     url(r'^searchPapers/', views.searchPage, name="searchPapersPage"),
     url(r'^myPapers/', views.myPapers, name="myPapersPage"),
@@ -35,7 +34,9 @@ urlpatterns = [
     url(r'^pendingRevisions/', views.pendingRevisions, name="pendingRevisionsPage"),
     url(r'^reviewPaper/(?P<paper_id>\d+)',
         views.revisionPage, name="revisionPage"),
-    url(r'^refuseRevision/', views.refuseRevision, name="refuseRevision"),
+    url(r'^submitReview/', views.uploadRevision, name="submitReview"),
+    url(r'^refuseRevision/(?P<paper_id>\d+)', views.refuseRevision, name="refuseRevision"),
+    url(r'^questionnaire/(?P<q_id>\d+)', views.getQu, name="questXml"),
 
     url(r'^submitedPapers/', views.submitedPapersPage, name="sumbitedPapersPage"),
     url(r'^appointingRevisions/(?P<paper_id>\d+)', views.appointRevisionPage,
